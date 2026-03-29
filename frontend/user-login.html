@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Authentication - TurfArena</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    /* Specific layout for login */
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .auth-card {
+      padding: 40px 32px;
+      border-radius: 24px;
+      width: min(400px, 90vw);
+    }
+
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .auth-tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-weight: 600;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+
+    .auth-tab.active {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      text-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+    }
+
+    .input-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
+    
+    label { 
+      font-size: 11px; 
+      color: var(--text-muted); 
+      margin-left: 12px; 
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Applying global form class */
+    .input-group input { width: 100%; box-sizing: border-box; }
+
+    .message-box { font-size: 13px; text-align: center; margin-top: 12px; min-height: 18px; }
+    .error { color: var(--danger); font-weight: 500; }
+    .success { color: var(--success); font-weight: 500; }
+    
+    .back-link { display: block; text-align: center; margin-top: 24px; color: var(--text-muted); text-decoration: none; font-size: 13px; transition: 0.2s; }
+    .back-link:hover { color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="auth-card glass-panel">
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login" onclick="switchMode('login')">Login</div>
+      <div class="auth-tab" id="tab-register" onclick="switchMode('register')">Sign Up</div>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form">
+      <div class="input-group">
+        <label><i class="fa-solid fa-envelope" style="color:var(--primary);"></i> Email Address</label>
+        <input type="email" class="premium-input" id="login-email" placeholder="user@example.com" />
+      </div>
+      <div class="input-group">
+        <label><i class="fa-solid fa-lock" style="color:var(--primary);"></i> Password</label>
+        <input type="password" class="premium-input" id="login-password" placeholder="••••••••" />
+      </div>
+      <div class="message-box" id="login-message"></div>
+      <button class="btn-gold" style="width: 100%;" onclick="handleAuth('login')"><i class="fa-solid fa-right-to-bracket"></i> Login Securely</button>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" style="display: none;">
+      <div class="input-group">
+        <label><i class="fa-solid fa-user" style="color:var(--primary);"></i> Full Name</label>
+        <input type="text" class="premium-input" id="reg-name" placeholder="John Doe" />
+      </div>
+      <div class="input-group">
+        <label><i class="fa-solid fa-phone" style="color:var(--primary);"></i> Mobile Number</label>
+        <input type="tel" class="premium-input" id="reg-phone" placeholder="10-digit number" />
+      </div>
+      <div class="input-group">
+        <label><i class="fa-solid fa-envelope" style="color:var(--primary);"></i> Email Address</label>
+        <input type="email" class="premium-input" id="reg-email" placeholder="user@example.com" />
+      </div>
+      <div class="input-group">
+        <label><i class="fa-solid fa-lock" style="color:var(--primary);"></i> Password</label>
+        <input type="password" class="premium-input" id="reg-password" placeholder="••••••••" />
+      </div>
+      <div class="message-box" id="reg-message"></div>
+      <button class="btn-gold" style="width: 100%;" onclick="handleAuth('register')"><i class="fa-solid fa-user-plus"></i> Create Account</button>
+    </div>
+
+    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Reservations</a>
+  </div>
+
+  <script>
+    let mode = 'login';
+
+    function switchMode(newMode) {
+      mode = newMode;
+      document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none';
+      document.getElementById('register-form').style.display = mode === 'register' ? 'block' : 'none';
+      
+      document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+      document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+      
+      clearMessages();
+    }
+
+    function clearMessages() {
+      document.getElementById('login-message').textContent = "";
+      document.getElementById('reg-message').textContent = "";
+      document.getElementById('login-message').className = "message-box";
+      document.getElementById('reg-message').className = "message-box";
+    }
+
+    function showMessage(type, text, isError = true) {
+      const el = document.getElementById(`${type}-message`);
+      el.textContent = text;
+      el.className = `message-box ${isError ? 'error' : 'success'}`;
+    }
+
+    async function handleAuth(action) {
+      clearMessages();
+      let endpoint = action === 'login' ? '/api/auth/login' : '/api/auth/register';
+      let payload = {};
+
+      if (action === 'login') {
+        const email = document.getElementById('login-email').value.trim();
+        const pass = document.getElementById('login-password').value.trim();
+        if (!email || !pass) return showMessage('login', 'Please fill all fields');
+        payload = { email, password: pass };
+      } else {
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
+        const pass = document.getElementById('reg-password').value.trim();
+        if (!name || !email || !phone || !pass) return showMessage('reg', 'Please fill all fields');
+        payload = { name, email, phone, password: pass };
+      }
+
+      try {
+        const response = await fetch(`http://localhost:5000${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          showMessage(action === 'login' ? 'login' : 'reg', data.error);
+          return;
+        }
+
+        showMessage(action === 'login' ? 'login' : 'reg', data.message, false);
+        
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        
+        setTimeout(() => {
+          window.location.href = 'user-dashboard.html';
+        }, 800);
+
+      } catch (err) {
+        showMessage(action === 'login' ? 'login' : 'reg', 'Server connection failed');
+      }
+    }
+  </script>
+</body>
+</html>
