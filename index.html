@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TurfArena - Online Turf Booking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="js/theme.js"></script>
+  
+  <link rel="stylesheet" href="https://cdn.pannellum.org/2.5/pannellum.css" />
+  <script src="https://cdn.pannellum.org/2.5/pannellum.js"></script>
+  
+  <link rel="stylesheet" href="css/global.css?v=2">
+  <link rel="stylesheet" href="css/index.css?v=2">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="logo" onclick="window.location.href='index.html'">
+      <div class="logo-icon">♛</div>
+      <span>TurfArena</span>
+    </div>
+    <nav class="top-nav">
+        <a href="index.html">Book Turf</a>
+        <a href="community.html">Community</a>
+    </nav>
+    <div class="header-actions">
+      <label class="header-search" aria-label="Search turfs">
+        <span class="header-search-icon">⌕</span>
+        <input id="turfSearchInput" type="search" placeholder="Search turfs..." />
+      </label>
+      <button class="theme-toggle" type="button" data-theme-toggle></button>
+      <span id="visitCountDisplay" class="top-stat">Visits: 0</span>
+      <span id="weatherDisplay" class="top-stat weather-pill">
+        ⏳ Checking weather...
+      </span>
+      <div id="userAuthActions" style="display: flex; gap: 8px;"></div>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu" aria-expanded="false">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Menu Drawer -->
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+  <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile navigation">
+    <a href="index.html">Book Turf</a>
+    <a href="community.html">Community</a>
+    <div class="mobile-menu-actions" id="mobileAuthActions"></div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy-panel">
+        <div class="hero-text">
+          <div class="hero-badge"><span>⚡ Live slots • No double booking</span></div>
+          <h1>Find and book your turf in few clicks.</h1>
+          <p>Browse nearby grounds, see all time slots for today, pick multiple free 1-hour slots, and confirm your booking instantly.</p>
+        </div>
+      </div>
+      <div class="hero-visual-panel">
+        <div class="hero-card">
+          <div class="hero-card-image" style="background-image:url('panaroma2.jpeg');"></div>
+          <div class="hero-card-gradient"></div>
+          <div class="hero-corner-badge hero-corner-left">● Book in Seconds</div>
+          <div class="hero-corner-badge hero-corner-right">● No Double Booking</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-header">
+        <div>
+          <h2>Available turfs</h2>
+          <span>Click a turf card to view sports and slots.</span>
+        </div>
+        <span class="section-note">Click a turf card to view sports and slots.</span>
+      </div>
+      <div class="discover-toolbar">
+        <div class="discover-filter-group">
+          <label for="sportFilter">Sport</label>
+          <select id="sportFilter">
+            <option value="all">All Sports</option>
+          </select>
+        </div>
+        <div class="discover-filter-group">
+          <label for="priceFilter">Price</label>
+          <select id="priceFilter">
+            <option value="all">Any Price</option>
+            <option value="low">Up to ₹900</option>
+            <option value="mid">₹901 - ₹1100</option>
+            <option value="high">₹1101+</option>
+          </select>
+        </div>
+        <div class="discover-filter-group">
+          <label for="ratingFilter">Rating</label>
+          <select id="ratingFilter">
+            <option value="all">Any Rating</option>
+            <option value="4">4.0+ stars</option>
+            <option value="3">3.0+ stars</option>
+            <option value="unrated">Unrated</option>
+          </select>
+        </div>
+        <button class="discover-chip-btn" type="button" id="favoritesOnlyBtn" onclick="toggleFavoritesOnly()">Favorites only</button>
+        <button class="discover-chip-btn discover-chip-btn-muted" type="button" onclick="resetFilters()">Reset</button>
+      </div>
+      <div class="discover-meta-row">
+        <span id="resultsSummaryText">Showing all turfs</span>
+        <span id="favoritesSummaryText">0 favorites saved</span>
+      </div>
+      <div class="turf-grid" id="turfGrid"></div>
+    </section>
+  </main>
+
+  <a class="floating-admin-btn" href="admin-login.html">👥 Admin Panel</a>
+
+  <div class="slot-modal-backdrop" id="slotModalBackdrop">
+    <div class="slot-modal">
+      <div class="modal-left-col">
+        <div class="slot-modal-header">
+          <div>
+            <h3 id="modalTurfName">Turf name</h3>
+            <span id="modalTurfMeta">Location • Sports</span>
+            <button class="view-360-btn" id="view360Btn" onclick="togglePanorama()" style="display:none; margin-top:10px;">Open 360° Turf View</button>
+          </div>
+          <button class="close-btn" onclick="closeModal()">×</button>
+        </div>
+
+        <div id="panoramaSection" style="display:none; margin-bottom: 20px;">
+          <div class="panorama-shell">
+            <div class="panorama-topbar">
+              <div>
+                <strong>360° Turf View</strong>
+                <span>Drag to look around the selected turf in full panorama.</span>
+              </div>
+              <div class="panorama-badge">Live 360</div>
+            </div>
+            <div class="panorama-stage panorama-stage-360">
+              <div id="panorama" class="panorama-canvas" aria-label="Interactive 360 degree turf view"></div>
+              <div class="panorama-overlay">
+                <span>Drag to look around</span>
+              </div>
+            </div>
+            <div class="panorama-controls">
+              <div class="panorama-help">Use mouse, trackpad, or touch to pan the view. Scroll or pinch to zoom.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slots-container">
+          <div class="slots-header">
+            <span>Date: <span id="selectedDateText">Today</span></span>
+            <input type="date" id="bookingDate" />
+          </div>
+          <div class="slots-grid" id="slotsGrid"></div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot dot-free"></span> Free</div>
+            <div class="legend-item"><span class="legend-dot dot-booked"></span> Booked</div>
+            <div class="legend-item"><span class="legend-dot dot-blocked"></span> Blocked</div>
+          </div>
+          <div id="slotTooltip" class="slot-tooltip" role="tooltip" aria-hidden="true">Blocked by admin</div>
+        </div>
+      </div>
+
+      <div class="booking-form">
+        <div class="right-panel-header">
+          <span class="panel-tab active" id="tabBooking" onclick="switchTab('booking')">Booking details</span>
+          <span class="panel-tab" id="tabReviews" onclick="switchTab('reviews')">Reviews</span>
+          <span class="panel-tab" id="tabOpenings" onclick="switchTab('openings')" style="display:none;">Team openings</span>
+        </div>
+
+        <div id="bookingSection" class="tab-content">
+          <div class="selected-slots" id="selectedSlotsText">Select a free slot.</div>
+          <div class="input-group"><label>Name</label><input type="text" id="userNameInput" /></div>
+          <div class="inline">
+            <div class="input-group"><label>Mobile</label><input type="tel" id="userPhoneInput" maxlength="10" inputmode="numeric" placeholder="10-digit mobile number" /></div>
+            <div class="input-group">
+                <label>Sport</label>
+                <select id="sportType"></select>
+            </div>
+          </div>
+          <div class="booking-rules">
+            <strong>Booking rules</strong>
+            <span>Name is required and mobile number must be exactly 10 digits.</span>
+          </div>
+          <div class="price-summary"><span id="totalPriceText">Total: ₹0</span></div>
+          <button class="btn btn-primary" style="width:100%" onclick="confirmBooking()">Confirm & Pay</button>
+        </div>
+
+        <div id="openingsSection" class="tab-content" style="display: none;">
+            <div id="openingsList" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px;"></div>
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
+                <h5 style="margin-bottom: 10px;">Post an Opening</h5>
+                <div class="input-group"><label>Team Name</label><input type="text" id="postTeamName"></div>
+                <button class="btn btn-outline" style="width: 100%;" onclick="postOpening()">Post Opening</button>
+            </div>
+        </div>
+
+        <div id="reviewsSection" class="tab-content" style="display: none;">
+          <div class="reviews-summary">
+            <div>
+              <div class="reviews-heading">Turf Reviews</div>
+              <div class="reviews-subtext" id="reviewsCountText">No reviews yet.</div>
+            </div>
+            <div class="reviews-average" id="reviewsAverageText">0.0</div>
+          </div>
+          <div class="review-breakdown-card">
+            <div class="review-breakdown-heading">Rating breakdown</div>
+            <div id="reviewBreakdownList" class="review-breakdown-list"></div>
+          </div>
+          <div id="reviewsList" class="reviews-list"></div>
+          <div class="review-form-card">
+            <div class="review-form-header">
+              <div>
+                <div class="reviews-heading" id="reviewFormTitle">Rate this Turf</div>
+                <div class="reviews-subtext" id="reviewFormHelper">Booked players can share ground quality, lighting, and turf condition.</div>
+              </div>
+              <button class="review-delete-btn" id="deleteReviewBtn" type="button" onclick="deleteReview()" style="display:none;">Delete</button>
+            </div>
+            <div id="reviewStars" class="review-stars" aria-label="Rate this turf">
+              <button type="button" class="review-star" data-rating="1" onclick="setReviewRating(1)">☆</button>
+              <button type="button" class="review-star" data-rating="2" onclick="setReviewRating(2)">☆</button>
+              <button type="button" class="review-star" data-rating="3" onclick="setReviewRating(3)">☆</button>
+              <button type="button" class="review-star" data-rating="4" onclick="setReviewRating(4)">☆</button>
+              <button type="button" class="review-star" data-rating="5" onclick="setReviewRating(5)">☆</button>
+            </div>
+            <textarea id="reviewComment" class="review-textarea" placeholder="Leave a comment about the turf, lights, or ground quality..."></textarea>
+            <button class="btn btn-primary" id="submitReviewBtn" style="width:100%" onclick="submitReview()">Submit Review</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slot-modal-backdrop" id="turfModal" style="z-index: 200;">
+    <div class="slot-modal" style="grid-template-columns: 1fr; width: 400px; min-height: auto;">
+      <div class="booking-form" style="width: 100%;">
+        <div class="right-panel-header">
+            <span class="panel-tab active">Owner: List New Turf</span>
+            <button class="close-btn" onclick="closeOwnerModals()">×</button>
+        </div>
+        <div style="padding: 20px;">
+            <div class="input-group"><label>Turf Name</label><input type="text" id="newTurfName"></div>
+            <div class="input-group"><label>Location</label><input type="text" id="newTurfLoc"></div>
+            <div class="input-group"><label>Price/Hr</label><input type="number" id="newTurfPrice" value="1200"></div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="handleCreateTurf()">List Turf</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slot-modal-backdrop payment-backdrop" id="mockRazorpayBackdrop" style="z-index: 300;">
+    <div class="upi-payment-card">
+      <button class="upi-close-btn" type="button" onclick="closeMockRazorpay()" aria-label="Close payment modal">×</button>
+      <div class="upi-payment-top">
+        <div class="upi-amount-wrap">
+          <div class="upi-amount-label">Booking Total</div>
+          <div id="rzpAmount" class="upi-amount-value">₹0</div>
+        </div>
+        <div class="upi-branding">TurfArena UPI Payment</div>
+      </div>
+      <div class="upi-payment-body">
+        <div class="upi-instruction-card">
+          <strong>Scan the mock QR to continue</strong>
+          <span>Generate a fresh QR, then confirm the booking with the auto-filled payment reference.</span>
+        </div>
+        <div class="upi-field-group">
+          <label>Mock Payment QR</label>
+          <canvas id="bookingQrCanvas" width="180" height="180" style="width:180px; height:180px; background:#fff; border-radius:16px; padding:10px; display:none; margin:0 auto;"></canvas>
+          <div id="bookingQrRef" style="margin-top:10px; text-align:center; color:var(--text-muted); font-size:0.9rem;">Generate QR to create a payment reference</div>
+        </div>
+        <div class="upi-actions">
+          <button class="upi-btn upi-btn-primary" type="button" onclick="startBookingUpiPayment()">Generate QR</button>
+          <button class="upi-btn upi-btn-dark" type="button" onclick="processMockPayment()">Confirm Booking</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer"></div>
+  <script src="js/index.js?v=2"></script>
+  <script src="js/nav.js"></script>
+</body>
+</html>

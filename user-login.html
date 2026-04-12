@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Login - TurfArena</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/user-login.css">
+</head>
+<body>
+  <div class="login-card">
+    <h2>User Login</h2>
+    <div class="input-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" placeholder="your@email.com" />
+    </div>
+    <div class="input-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="••••••••" />
+    </div>
+    <div class="error" id="loginError"></div>
+    <button class="btn" onclick="handleLogin()">Login</button>
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </div>
+
+  <script src="js/user-login.js"></script>
+</body>
+</html>

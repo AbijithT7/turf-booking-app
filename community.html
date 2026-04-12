@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TurfArena | Community Hub</title>
+    <script src="js/theme.js"></script>
+    <style>
+    /* PREMIUM FORM INPUTS FOR MODALS */
+    .form-group { margin-bottom: 20px; text-align: left; }
+    .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
+    
+    .form-group input, 
+    .form-group select { 
+        width: 100%; 
+        min-height: 62px;
+        padding: 16px 18px;
+        background: var(--surface-1); 
+        border: 1px solid var(--border-soft); 
+        border-radius: 18px; 
+        color: var(--text); 
+        font-family: inherit; 
+        font-size: 1.05rem; 
+        line-height: 1.2;
+        outline: none; 
+        transition: all 0.3s ease; 
+        box-sizing: border-box;
+    }
+
+    .form-group select {
+        appearance: none;
+        background-image:
+            linear-gradient(45deg, transparent 50%, #cbd5e1 50%),
+            linear-gradient(135deg, #cbd5e1 50%, transparent 50%);
+        background-position:
+            calc(100% - 24px) calc(50% - 4px),
+            calc(100% - 16px) calc(50% - 4px);
+        background-size: 8px 8px, 8px 8px;
+        background-repeat: no-repeat;
+        padding-right: 52px;
+    }
+
+    /* Glow effect when user clicks the input */
+    .form-group input:focus, 
+    .form-group select:focus { 
+        border-color: var(--primary); 
+        background: var(--surface-2); 
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Fix the dropdown list so it's not white */
+    .form-group select option { 
+        background: var(--bg-elevated); 
+        color: var(--text); 
+    } 
+
+    /* THE PREMIUM SUBMIT BUTTON */
+    .btn-submit-post { 
+        width: 100%; 
+        padding: 15px; 
+        background: var(--primary); 
+        color: white; 
+        border: none; 
+        border-radius: 10px; 
+        font-size: 1rem; 
+        font-weight: 800; 
+        cursor: pointer; 
+        transition: 0.3s ease; 
+        margin-top: 10px;
+    }
+    
+    .btn-submit-post:hover { 
+        background: var(--primary-dark); 
+        transform: translateY(-2px);
+    }
+</style>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/community.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-logo" onclick="window.location.href='index.html'"><span class="nav-logo-icon">♛</span> Turf<span>Arena</span></div>
+        <div class="nav-links">
+            <a href="index.html">Book Turf</a>
+            <a href="community.html" class="active">Community</a>
+            <button class="theme-toggle" type="button" data-theme-toggle></button>
+            <div id="userAuthActions">
+                <button class="nav-login-btn" onclick="window.location.href='login.html'">Login</button>
+            </div>
+        </div>
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu" aria-expanded="false">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu Drawer -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile navigation">
+        <a href="index.html">Book Turf</a>
+        <a href="community.html">Community</a>
+        <div class="mobile-menu-actions" id="mobileAuthActions"></div>
+    </nav>
+
+    <main class="community-container">
+        <header class="comm-header">
+            <div class="comm-badge">⚡ Live teams • challenges • tournaments</div>
+            <h1>Players <span>Lobby</span></h1>
+            <p>Find teammates, issue turf wars, host tournaments, and keep the whole community moving.</p>
+            <div class="comm-metrics">
+                <div class="comm-metric-card">
+                    <span>Openings</span>
+                    <strong id="commMetricOpenings">0 live</strong>
+                </div>
+                <div class="comm-metric-card">
+                    <span>Turf Wars</span>
+                    <strong id="commMetricWars">0 live</strong>
+                </div>
+                <div class="comm-metric-card">
+                    <span>Tournaments</span>
+                    <strong id="commMetricTournaments">0 live</strong>
+                </div>
+                <div class="comm-metric-card">
+                    <span>Pending Review</span>
+                    <strong id="commMetricApprovals">0 pending</strong>
+                </div>
+            </div>
+        </header>
+
+        <div class="comm-tabs">
+            <button class="tab-btn active" onclick="switchCommTab('lobby', this)">Free Agent Lobby</button>
+            <button class="tab-btn" onclick="switchCommTab('wars', this)">Turf Wars (v/s)</button>
+            <button class="tab-btn" onclick="switchCommTab('tournaments', this)">Tournaments</button>
+        </div>
+
+        <section id="lobbySection" class="comm-section">
+            <div class="section-header">
+                <h2>Individual Openings</h2>
+                <button class="btn-post-primary" onclick="openPostModal('solo')">+ Post Opening</button>
+            </div>
+            <div id="lobbyGrid" class="cards-grid"></div>
+        </section>
+
+        <section id="warsSection" class="comm-section" style="display:none;">
+            <div class="section-header">
+                <h2>Team Challenges</h2>
+                <button class="btn-post-primary" onclick="openPostModal('team')">+ Issue Challenge</button>
+            </div>
+            <div id="warsGrid" class="cards-grid"></div>
+        </section>
+
+        <section id="tournamentsSection" class="comm-section" style="display:none;">
+            <div class="section-header">
+                <h2>Active Tournaments</h2>
+                <div style="display:flex; align-items:center; gap:14px;">
+                    <span style="color:var(--text-muted); font-size:0.9rem;">Weekend Trophies & Leagues</span>
+                    <button id="hostTournamentBtn" class="btn-post-primary" onclick="openPostModal('tournament')">+ Host Tournament</button>
+                </div>
+            </div>
+            <div id="tournamentGrid" class="cards-grid"></div>
+        </section>
+    </main>
+
+    <div id="commModal" class="modal-backdrop" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Post Opening</h2>
+                <button class="close-btn" onclick="closeCommModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="commForm">
+                    <input type="hidden" id="postType">
+                    <p id="postModalHint" class="modal-hint">Captains can review player requests and accept them manually.</p>
+                    <div class="form-group">
+                        <label>Select Sport</label>
+                        <select id="commSport">
+                            <option value="Football">Football</option>
+                            <option value="Cricket">Cricket</option>
+                            <option value="Badminton">Badminton</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="labelName">Team Name</label>
+                        <input type="text" id="commName" placeholder="e.g. Marina Sharks">
+                    </div>
+                    <div class="form-group">
+                        <label>Select Turf</label>
+                        <select id="commTurf">
+                            <option value="GreenLine Arena">GreenLine Arena</option>
+                            <option value="Boundary Line">Boundary Line</option>
+                            <option value="SkyLine Hub">SkyLine Hub</option>
+                        </select>
+                    </div>
+                    <div id="soloFields">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Spots Open</label>
+                                <input type="number" id="commSpots" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Fare/Person</label>
+                                <input type="number" id="commFare" value="150">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="teamFields" style="display:none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="commDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Time Slot</label>
+                                <input type="time" id="commTime">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tournamentFields" style="display:none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Tournament Date</label>
+                                <input type="date" id="commTournamentDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Start Time</label>
+                                <input type="time" id="commTournamentTime">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Entry Fee</label>
+                                <input type="number" id="commTournamentFee" value="499" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Max Teams</label>
+                                <input type="number" id="commMaxTeams" value="16" min="2">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Prize Pool / Format</label>
+                            <input type="text" id="commPrizePool" placeholder="e.g. Winner gets ₹20,000 + trophy">
+                        </div>
+                    </div>
+                    <button type="button" class="btn-submit-post" onclick="handlePostSubmit()">Confirm & Post</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="joinPlayerModal" class="modal-backdrop" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Join this Team</h2>
+                <button class="close-btn" onclick="closeJoinModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="joinContext" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;"></p>
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="playerName" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="playerPhone" placeholder="For the captain to contact you">
+                </div>
+                <button class="btn-submit-post" onclick="submitJoinRequest()">Send Join Request</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="manageRequestsModal" class="modal-backdrop" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="manageModalTitle">Manage Applicants</h2>
+                <button class="close-btn" onclick="closeManageModal()">&times;</button>
+            </div>
+            <div id="requestsListContainer" class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                </div>
+        </div>
+    </div>
+
+    <div id="tournamentModal" class="modal-backdrop" style="display:none; z-index: 2000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Register for Tournament</h2>
+                <button class="close-btn" onclick="document.getElementById('tournamentModal').style.display='none'">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: rgba(253, 224, 71, 0.1); border: 1px solid #fde047; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3 id="tourneyNameDisplay" style="color: #fde047; margin: 0 0 5px 0;">Tournament Name</h3>
+                    <p id="tourneyFeeDisplay" style="color: white; margin: 0; font-size: 0.9rem;">Entry Fee: ₹0</p>
+                </div>
+                <p class="modal-hint">Tournament registrations are reviewed by admin before the team is fully locked in.</p>
+                <div class="form-group">
+                    <label>Your Team Name</label>
+                    <input type="text" id="tourneyTeamName" placeholder="e.g., Chennai Titans">
+                </div>
+                <div class="form-group">
+                    <label>Captain's Phone</label>
+                    <input type="text" id="tourneyPhone" placeholder="10-digit mobile">
+                </div>
+                <div class="form-group">
+                    <label>Mock Payment QR</label>
+                    <canvas id="tourneyQrCanvas" width="180" height="180" style="width:180px; height:180px; background:#fff; border-radius:16px; padding:10px; display:none; margin:0 auto 10px;"></canvas>
+                    <div id="tourneyQrRef" style="text-align:center; color:var(--text-muted); font-size:0.9rem;">Generate QR to create a payment reference</div>
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Generate a random QR, then submit the registration with the generated payment reference.</p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-submit-post" style="background:#1e293b; color:#fde047; border:1px solid #fde047;" onclick="startTournamentPayment()">Generate QR</button>
+                    <button class="btn-submit-post" style="background: #fde047; color: #000;" onclick="confirmTourneyRegistration()">Submit Registration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="turfWarModal" class="modal-backdrop" style="display:none; z-index: 2000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Accept Challenge</h2>
+                <button class="close-btn" onclick="document.getElementById('turfWarModal').style.display='none'">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-muted); margin-bottom: 20px;">You are accepting a challenge from <strong id="warHostName" style="color: white;">Team</strong>.</p>
+                
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: var(--text-muted);">Total Turf Cost:</span>
+                        <strong id="warTotalCost">₹1500</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                        <span style="color: var(--accent-red); font-weight: bold;">Your 50% Share:</span>
+                        <strong id="warSplitCost" style="color: var(--accent-red); font-size: 1.2rem;">₹750</strong>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Your Team Name (Challenger)</label>
+                    <input type="text" id="warChallengerName" placeholder="Enter your team name">
+                </div>
+                <div class="form-group">
+                    <label>Mock Payment QR</label>
+                    <canvas id="warQrCanvas" width="180" height="180" style="width:180px; height:180px; background:#fff; border-radius:16px; padding:10px; display:none; margin:0 auto 10px;"></canvas>
+                    <div id="warQrRef" style="text-align:center; color:var(--text-muted); font-size:0.9rem;">Generate QR to create a payment reference</div>
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Generate a random QR for the 50% share, then submit to lock the match.</p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-submit-post" style="background:#1e293b; color:#ef4444; border:1px solid #ef4444;" onclick="startWarPayment()">Generate QR</button>
+                    <button class="btn-submit-post" style="background: var(--accent-red);" onclick="confirmTurfWar()">Lock Match</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+    <script src="js/community.js"></script>
+    <script src="js/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | TurfArena</title>
+    <link rel="stylesheet" href="css/global.css?v=2">
+    <link rel="stylesheet" href="css/login.css?v=2"> <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <div class="logo" onclick="window.location.href='index.html'">Turf<span>Arena</span></div>
+                <h2>Admin Login</h2>
+                <p>Secure access for turf owners & staff</p>
+            </div>
+
+            <form id="adminForm">
+                <div class="form-group">
+                    <label>Admin Email</label>
+                    <input type="email" id="adminEmail" placeholder="admin@turfarena.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="adminPass" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn-auth">Access Dashboard</button>
+            </form>
+
+            <div class="auth-footer">
+                <a href="index.html">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const storedApiHost = localStorage.getItem('apiHost');
+        const API_HOST = !storedApiHost || storedApiHost === 'http://127.0.0.1:5001'
+            ? 'http://127.0.0.1:5000'
+            : storedApiHost;
+        if (storedApiHost !== API_HOST) localStorage.setItem('apiHost', API_HOST);
+        const BASE_URL = `${API_HOST}/api`;
+
+        document.getElementById('adminForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('adminPass').value;
+
+            try {
+                const res = await fetch(`${BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: pass })
+                });
+
+                const data = await res.json();
+                if (!res.ok || data.user.role !== 'admin') {
+                    return alert("Invalid Admin Credentials!");
+                }
+
+                localStorage.setItem('apiHost', API_HOST);
+                localStorage.setItem('currentUser', JSON.stringify(data.user));
+                localStorage.setItem('adminLoggedIn', '1');
+                alert("Welcome, Boss! Accessing Command Center...");
+                window.location.href = 'admin-dashboard.html';
+            } catch (error) {
+                alert("Unable to connect to backend. Start the server and try again.");
+            }
+        });
+    </script>
+</body>
+</html>

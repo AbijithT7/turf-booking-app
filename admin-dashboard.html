@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TurfArena | Admin Command Center</title>
+    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="css/global.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 20%),
+                radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.12), transparent 24%),
+                var(--page-gradient);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .admin-shell {
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            border-right: 1px solid var(--border-soft);
+            background: color-mix(in srgb, var(--surface-1) 92%, transparent);
+            backdrop-filter: blur(14px);
+            padding: 28px 18px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 26px;
+        }
+
+        .brand-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 30% 30%, #60A5FA, #2563eb 55%, #1d4ed8);
+            color: white;
+            box-shadow: 0 14px 30px rgba(37,99,235,0.3);
+        }
+
+        .brand span {
+            color: var(--primary);
+        }
+
+        .sidebar-copy {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 22px;
+        }
+
+        .nav-items {
+            display: grid;
+            gap: 8px;
+        }
+
+        .nav-item {
+            padding: 14px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--text-muted);
+            transition: 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: color-mix(in srgb, var(--primary) 14%, var(--surface-2));
+            color: var(--text);
+            border-color: color-mix(in srgb, var(--primary) 42%, transparent);
+        }
+
+        .main-content {
+            min-width: 0;
+            padding: 22px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 18px 20px;
+            border-radius: 24px;
+            background: color-mix(in srgb, var(--surface-1) 90%, transparent);
+            border: 1px solid var(--border-soft);
+            box-shadow: 0 20px 54px rgba(2, 6, 23, 0.16);
+        }
+
+        .header-copy h1 {
+            margin: 0 0 6px;
+            font-size: 2rem;
+            letter-spacing: -0.04em;
+        }
+
+        .header-copy p {
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-header,
+        .btn-action,
+        .btn-danger,
+        .btn-gold,
+        .btn-status,
+        .btn-subtle {
+            min-height: 44px;
+            border-radius: 14px;
+            border: 1px solid var(--border-soft);
+            padding: 0 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-header,
+        .btn-subtle {
+            background: var(--surface-2);
+            color: var(--text);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 75%, white));
+            color: white;
+            border: none;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.14);
+            color: #fecaca;
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #facc15, #f59e0b);
+            color: #111827;
+            border: none;
+        }
+
+        .btn-status {
+            min-height: 38px;
+            padding: 0 12px;
+            border-radius: 12px;
+            background: rgba(34, 197, 94, 0.14);
+            color: #bbf7d0;
+            border-color: rgba(34, 197, 94, 0.22);
+        }
+
+        .btn-status.reject {
+            background: rgba(239, 68, 68, 0.14);
+            color: #fecaca;
+            border-color: rgba(239, 68, 68, 0.22);
+        }
+
+        .btn-header:hover,
+        .btn-action:hover,
+        .btn-danger:hover,
+        .btn-gold:hover,
+        .btn-status:hover,
+        .btn-subtle:hover {
+            transform: translateY(-1px);
+        }
+
+        .dashboard-section {
+            display: none;
+        }
+
+        .dashboard-section.active {
+            display: block;
+        }
+
+        .stats-grid,
+        .community-stats,
+        .mod-grid {
+            display: grid;
+            gap: 18px;
+        }
+
+        .stats-grid,
+        .community-stats {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            margin-bottom: 24px;
+        }
+
+        .stat-card,
+        .panel,
+        .table-panel,
+        .admin-form,
+        .moderation-card {
+            background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 95%, transparent), color-mix(in srgb, var(--surface-1) 98%, transparent));
+            border: 1px solid var(--border-soft);
+            border-radius: 24px;
+            box-shadow: 0 20px 54px rgba(2, 6, 23, 0.14);
+        }
+
+        .stat-card {
+            padding: 22px;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .stat-card .value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+        }
+
+        .panel,
+        .table-panel,
+        .admin-form,
+        .moderation-card {
+            padding: 22px;
+        }
+
+        .panel-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .panel-title h2,
+        .panel-title h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            letter-spacing: -0.03em;
+        }
+
+        .panel-title p {
+            margin: 4px 0 0;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+        }
+
+        .chart-container {
+            height: 300px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 15px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-soft);
+            vertical-align: top;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        td strong {
+            color: var(--text);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 20px;
+            color: var(--text-muted);
+        }
+
+        .admin-form {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 14px;
+            align-items: end;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .form-group input,
+        .form-group select {
+            min-height: 48px;
+            border-radius: 14px;
+            border: 1px solid var(--border-soft);
+            background: var(--surface-1);
+            color: var(--text);
+            padding: 0 14px;
+            font: inherit;
+            outline: none;
+        }
+
+        .mod-grid {
+            grid-template-columns: 1.1fr 0.9fr;
+            margin-bottom: 24px;
+        }
+
+        .request-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .request-card {
+            padding: 16px;
+            border-radius: 18px;
+            background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+            border: 1px solid var(--border-soft);
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .request-copy strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .request-copy div {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        .request-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        .badge.pending {
+            background: rgba(250, 204, 21, 0.14);
+            color: #fde68a;
+        }
+
+        .badge.type {
+            background: rgba(59, 130, 246, 0.14);
+            color: #bfdbfe;
+        }
+
+        .badge.success {
+            background: rgba(34, 197, 94, 0.14);
+            color: #bbf7d0;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.12);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+
+        .status-chip.pending {
+            background: rgba(250, 204, 21, 0.14);
+            color: #fde68a;
+        }
+
+        .status-chip.success {
+            background: rgba(34, 197, 94, 0.14);
+            color: #bbf7d0;
+        }
+
+        .status-chip.danger {
+            background: rgba(239, 68, 68, 0.14);
+            color: #fecaca;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.82);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-box {
+            background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 92%, transparent), color-mix(in srgb, var(--surface-1) 96%, transparent));
+            border: 1px solid var(--border-soft);
+            border-radius: 24px;
+            width: min(560px, 92vw);
+            padding: 24px;
+            box-shadow: 0 35px 90px rgba(2, 6, 23, 0.4);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 18px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .admin-slot {
+            min-height: 42px;
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .admin-slot.blocked {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fecaca;
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid,
+            .community-stats,
+            .admin-form {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .mod-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .admin-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-soft);
+            }
+        }
+
+        @media (max-width: 720px) {
+            .main-content {
+                padding: 14px;
+            }
+
+            .header,
+            .request-card,
+            .panel-title {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .stats-grid,
+            .community-stats,
+            .admin-form,
+            .slots-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .request-actions,
+            .table-actions,
+            .header-actions {
+                justify-content: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-shell">
+        <aside class="sidebar">
+            <div class="brand"><span class="brand-badge">♛</span> Turf<span>Arena</span> Admin</div>
+            <div class="sidebar-copy">Control bookings, moderate community posts, and manage tournament approvals from one place.</div>
+            <div class="nav-items">
+                <div class="nav-item active" onclick="switchTab('overview', this)">📊 Overview</div>
+                <div class="nav-item" onclick="switchTab('users', this)">👤 Users</div>
+                <div class="nav-item" onclick="switchTab('turfs', this)">🏟️ Turfs</div>
+                <div class="nav-item" onclick="switchTab('community', this)">🛡️ Community Control</div>
+                <div class="nav-item" onclick="switchTab('tourney', this)">🏆 Tournaments</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-copy">
+                    <h1>Admin Command Center</h1>
+                    <p>Moderate openings, approve turf wars and tournament entries, and keep the platform tidy.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="theme-toggle" type="button" data-theme-toggle></button>
+                    <button class="btn-header" onclick="window.location.href='index.html'">Exit to Site</button>
+                    <button class="btn-danger" onclick="clearLogs()">Clear Booking Logs</button>
+                </div>
+            </header>
+
+            <section id="overviewSection" class="dashboard-section active">
+                <div class="stats-grid">
+                    <div class="stat-card"><h3>Revenue (Est.)</h3><div class="value" id="totalRevenue">₹0</div></div>
+                    <div class="stat-card"><h3>Total Bookings</h3><div class="value" id="totalBookings">0</div></div>
+                    <div class="stat-card"><h3>Pending Community Requests</h3><div class="value" id="pendingCommunityRequests">0</div></div>
+                    <div class="stat-card"><h3>Live Community Posts</h3><div class="value" id="liveCommunityPosts">0</div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">
+                        <div>
+                            <h2>Weekly Revenue</h2>
+                            <p>Estimated from booked slots and turf base pricing.</p>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="revenueChart"></canvas></div>
+                </div>
+            </section>
+
+            <section id="usersSection" class="dashboard-section">
+                <div class="table-panel">
+                    <div class="panel-title">
+                        <div>
+                            <h2>Registered Users</h2>
+                            <p>Quick view of player accounts currently available in the system.</p>
+                        </div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Name</th><th>Email</th><th>Phone</th></tr></thead>
+                        <tbody id="adminUsersTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="turfsSection" class="dashboard-section">
+                <div class="table-panel">
+                    <div class="panel-title">
+                        <div>
+                            <h2>Manage Turfs & Slots</h2>
+                            <p>Block individual hours whenever maintenance or private events need the turf closed.</p>
+                        </div>
+                        <button class="btn-action" onclick="openCreateTurfModal()">+ Create New Turf</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Turf Name</th>
+                                <th>Location</th>
+                                <th>Base Price</th>
+                                <th>Admin Access</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTurfsTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="communitySection" class="dashboard-section">
+                <div class="community-stats">
+                    <div class="stat-card"><h3>Openings</h3><div class="value" id="communityOpeningsCount">0</div></div>
+                    <div class="stat-card"><h3>Turf Wars</h3><div class="value" id="communityWarsCount">0</div></div>
+                    <div class="stat-card"><h3>Tournaments</h3><div class="value" id="communityTournamentCount">0</div></div>
+                    <div class="stat-card"><h3>Pending Approvals</h3><div class="value" id="communityPendingCount">0</div></div>
+                </div>
+
+                <div class="mod-grid">
+                    <div class="moderation-card">
+                        <div class="panel-title">
+                            <div>
+                                <h2>Pending Requests Queue</h2>
+                                <p>Turf war requests and tournament registrations now wait here for admin approval first.</p>
+                            </div>
+                        </div>
+                        <div id="pendingRequestsList" class="request-list"></div>
+                    </div>
+                    <div class="moderation-card">
+                        <div class="panel-title">
+                            <div>
+                                <h2>Moderation Notes</h2>
+                                <p>Admin can remove individual openings, requests, and tournaments directly from this dashboard.</p>
+                            </div>
+                        </div>
+                        <div class="request-list">
+                            <div class="request-card">
+                                <div class="request-copy">
+                                    <strong>Individual openings</strong>
+                                    <div>Keep the lobby clean by removing stale or duplicate player openings.</div>
+                                </div>
+                            </div>
+                            <div class="request-card">
+                                <div class="request-copy">
+                                    <strong>Turf wars</strong>
+                                    <div>Approve only one challenger so the matchup is officially locked.</div>
+                                </div>
+                            </div>
+                            <div class="request-card">
+                                <div class="request-copy">
+                                    <strong>Tournaments</strong>
+                                    <div>Reject invalid registrations or delete tournaments that should no longer appear.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-panel">
+                    <div class="panel-title">
+                        <div>
+                            <h2>All Community Posts</h2>
+                            <p>Use delete controls to remove openings, turf wars, or tournaments one by one.</p>
+                        </div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Type</th><th>Name</th><th>Status</th><th>Details</th><th>Actions</th></tr></thead>
+                        <tbody id="communityPostsTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="tourneySection" class="dashboard-section">
+                <div class="panel-title">
+                    <div>
+                        <h2>Official Tournament Hub</h2>
+                        <p>Create official platform events with a proper date so they appear cleanly on the community page.</p>
+                    </div>
+                </div>
+                <div class="admin-form">
+                    <div class="form-group">
+                        <label>Tournament Name</label>
+                        <input type="text" id="tName" placeholder="e.g. Summer Cup">
+                    </div>
+                    <div class="form-group">
+                        <label>Entry Fee (₹)</label>
+                        <input type="number" id="tFee" placeholder="499">
+                    </div>
+                    <div class="form-group">
+                        <label>Tournament Date</label>
+                        <input type="date" id="tDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input type="time" id="tTime">
+                    </div>
+                    <div class="form-group">
+                        <label>Prize Pool</label>
+                        <input type="text" id="tPrize" placeholder="e.g. ₹20,000 + Trophy">
+                    </div>
+                    <button class="btn-gold" onclick="createAdminTournament()">+ Host Event</button>
+                </div>
+                <div class="table-panel">
+                    <table>
+                        <thead><tr><th>Event Name</th><th>Date</th><th>Fee</th><th>Teams Joined</th><th>Actions</th></tr></thead>
+                        <tbody id="adminTourneyTable">
+                            <tr><td colspan="5" class="empty-state">Loading tournaments...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="blockModal" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div>
+                    <h2 id="blockModalTitle" style="margin:0;">Manage Slots</h2>
+                    <p style="margin:6px 0 0; color: var(--text-muted);">Click a slot to block or unblock it for all users.</p>
+                </div>
+                <button class="close-btn" onclick="closeBlockModal()">×</button>
+            </div>
+            <div class="slots-grid" id="adminSlotsGrid"></div>
+        </div>
+    </div>
+
+    <div id="createTurfModal" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div>
+                    <h2 style="margin:0;">Create New Turf</h2>
+                    <p style="margin:6px 0 0; color: var(--text-muted);">Add a turf with the details needed for the main platform listing.</p>
+                </div>
+                <button class="close-btn" onclick="closeCreateTurfModal()">×</button>
+            </div>
+            <form id="createTurfForm" style="display:grid; gap:14px;">
+                <div class="form-group">
+                    <label for="newTurfName">Turf Name</label>
+                    <input type="text" id="newTurfName" placeholder="e.g. Victory Arena" required>
+                </div>
+                <div class="form-group">
+                    <label for="newTurfLocation">Location</label>
+                    <input type="text" id="newTurfLocation" placeholder="e.g. Velachery" required>
+                </div>
+                <div class="form-group">
+                    <label for="newTurfSports">Sports</label>
+                    <input type="text" id="newTurfSports" placeholder="e.g. Football, Cricket">
+                </div>
+                <div class="form-group">
+                    <label for="newTurfPrice">Base Price / Hour</label>
+                    <input type="number" id="newTurfPrice" placeholder="e.g. 1200" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="newTurfImage">Image URL</label>
+                    <input type="text" id="newTurfImage" placeholder="Optional image path or URL">
+                </div>
+                <div class="form-group">
+                    <label for="newTurfPanorama">Panorama URL</label>
+                    <input type="text" id="newTurfPanorama" placeholder="Optional 360 panorama URL">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">
+                    <button type="button" class="btn-subtle" onclick="closeCreateTurfModal()">Cancel</button>
+                    <button type="submit" class="btn-action">Create Turf</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        if (!localStorage.getItem('adminLoggedIn')) {
+            window.location.href = 'admin-login.html';
+        }
+
+        const storedApiHost = localStorage.getItem('apiHost');
+        const API_HOST = !storedApiHost || storedApiHost === 'http://127.0.0.1:5001'
+            ? 'http://127.0.0.1:5000'
+            : storedApiHost;
+        if (storedApiHost !== API_HOST) localStorage.setItem('apiHost', API_HOST);
+        const BASE_URL = `${API_HOST}/api`;
+
+        let turfData = {};
+        let usersDB = [];
+        let bookings = [];
+        let communityPosts = [];
+        let blocked = JSON.parse(localStorage.getItem('blocked')) || {};
+        let activeAdminTurfId = null;
+        let revenueChartRef = null;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadAdminData();
+        });
+
+        async function fetchJsonOrThrow(path, options) {
+            const response = await fetch(`${BASE_URL}${path}`, options);
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || 'Request failed');
+            return data;
+        }
+
+        async function loadAdminData() {
+            try {
+                const [usersRes, turfsRes, bookingsRes, communityRes] = await Promise.all([
+                    fetch(`${BASE_URL}/users`),
+                    fetch(`${BASE_URL}/turfs`),
+                    fetch(`${BASE_URL}/bookings`),
+                    fetch(`${BASE_URL}/community`)
+                ]);
+
+                usersDB = usersRes.ok ? await usersRes.json() : [];
+                const turfs = turfsRes.ok ? await turfsRes.json() : [];
+                bookings = bookingsRes.ok ? await bookingsRes.json() : [];
+                communityPosts = communityRes.ok ? await communityRes.json() : [];
+
+                turfData = {};
+                turfs.forEach((t) => { turfData[t._id] = t; });
+
+                populateTables();
+                renderOverview();
+                renderCommunityModeration();
+                renderAdminTournaments();
+            } catch (error) {
+                console.error('Failed to load admin data:', error);
+                alert(error.message || 'Failed to load admin data.');
+            }
+        }
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.dashboard-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId + 'Section').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function formatDate(value) {
+            if (!value) return 'TBA';
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function formatTime(value) {
+            if (!value) return 'TBA';
+            const [hourString = '0', minuteString = '00'] = String(value).split(':');
+            const hour = Number(hourString);
+            const minute = Number(minuteString);
+            if (!Number.isFinite(hour) || !Number.isFinite(minute)) return value;
+            const suffix = hour >= 12 ? 'PM' : 'AM';
+            const normalizedHour = hour % 12 || 12;
+            return `${normalizedHour}:${String(minute).padStart(2, '0')} ${suffix}`;
+        }
+
+        function getStatusClass(status) {
+            const normalized = String(status || '').toLowerCase();
+            if (normalized.includes('pending') || normalized.includes('awaiting')) return 'pending';
+            if (normalized.includes('accepted') || normalized.includes('matched') || normalized.includes('open')) return 'success';
+            if (normalized.includes('rejected') || normalized.includes('full')) return 'danger';
+            return '';
+        }
+
+        function populateTables() {
+            const usersTable = document.getElementById('adminUsersTable');
+            if (usersDB.length === 0) {
+                usersTable.innerHTML = `<tr><td colspan="3" class="empty-state">No users registered yet.</td></tr>`;
+            } else {
+                usersTable.innerHTML = usersDB.map(u => `
+                    <tr><td><strong>${u.name}</strong></td><td>${u.email}</td><td>${u.phone || '-'}</td></tr>
+                `).join('');
+            }
+
+            const turfsTable = document.getElementById('adminTurfsTable');
+            const rows = Object.entries(turfData).map(([id, turf]) => `
+                <tr>
+                    <td><strong>${turf.name || 'Unnamed Turf'}</strong></td>
+                    <td>${(turf.meta || turf.location || 'Chennai').split(' • ')[0]}</td>
+                    <td>₹${turf.basePrice || 0}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-action" onclick="openBlockModal('${id}')">Block Slots</button>
+                            <button class="btn-danger" onclick="removeTurf('${id}')">Remove Turf</button>
+                        </div>
+                    </td>
+                </tr>
+            `);
+            turfsTable.innerHTML = rows.length ? rows.join('') : `<tr><td colspan="4" class="empty-state">No turfs listed yet.</td></tr>`;
+        }
+
+        function renderOverview() {
+            const totalBookings = bookings.length;
+            const totalRevenue = bookings.reduce((sum, b) => {
+                const turf = b.turfId && typeof b.turfId === 'object' ? b.turfId : turfData[b.turfId];
+                const turfPrice = turf && turf.basePrice ? turf.basePrice : 0;
+                const slotCount = Array.isArray(b.slots) ? b.slots.length : 0;
+                return sum + (slotCount * turfPrice);
+            }, 0);
+            const pendingCommunityRequests = communityPosts.reduce((sum, post) => sum + (post.requests || []).filter(req => req.status === 'Pending').length, 0);
+
+            document.getElementById('totalBookings').innerText = totalBookings;
+            document.getElementById('totalRevenue').innerText = `₹${totalRevenue.toLocaleString()}`;
+            document.getElementById('pendingCommunityRequests').innerText = pendingCommunityRequests;
+            document.getElementById('liveCommunityPosts').innerText = communityPosts.length;
+            initChart();
+        }
+
+        function renderCommunityModeration() {
+            const openingCount = communityPosts.filter(post => post.postType === 'solo').length;
+            const warCount = communityPosts.filter(post => post.postType === 'team').length;
+            const tournamentCount = communityPosts.filter(post => post.postType === 'tournament').length;
+            const pendingRequests = communityPosts.flatMap(post =>
+                (post.requests || [])
+                    .filter(request => request.status === 'Pending')
+                    .map(request => ({ post, request }))
+            );
+
+            document.getElementById('communityOpeningsCount').innerText = openingCount;
+            document.getElementById('communityWarsCount').innerText = warCount;
+            document.getElementById('communityTournamentCount').innerText = tournamentCount;
+            document.getElementById('communityPendingCount').innerText = pendingRequests.length;
+
+            const pendingRequestsList = document.getElementById('pendingRequestsList');
+            if (!pendingRequests.length) {
+                pendingRequestsList.innerHTML = `<div class="empty-state">No pending approvals right now.</div>`;
+            } else {
+                pendingRequestsList.innerHTML = pendingRequests.map(({ post, request }) => `
+                    <div class="request-card">
+                        <div class="request-copy">
+                            <strong>${request.teamName || request.name || 'Unknown Applicant'}</strong>
+                            <div>${request.email || 'No email'}${request.phone ? ` • ${request.phone}` : ''}</div>
+                            <div>${post.teamName} • ${post.postType} • ${post.turf || 'Turf TBA'}</div>
+                            <div class="request-badges">
+                                <span class="badge pending">Pending</span>
+                                <span class="badge type">${post.postType}</span>
+                                ${request.upiTransactionId ? `<span class="badge success">UPI ${request.upiTransactionId}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn-status" onclick="updateCommunityRequestStatus('${post._id}', '${request._id}', 'Accepted')">Approve</button>
+                            <button class="btn-status reject" onclick="updateCommunityRequestStatus('${post._id}', '${request._id}', 'Rejected')">Reject</button>
+                            <button class="btn-danger" onclick="removeCommunityRequest('${post._id}', '${request._id}')">Remove</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const communityPostsTable = document.getElementById('communityPostsTable');
+            if (!communityPosts.length) {
+                communityPostsTable.innerHTML = `<tr><td colspan="5" class="empty-state">No community posts yet.</td></tr>`;
+            } else {
+                communityPostsTable.innerHTML = communityPosts.map(post => {
+                    const activeRequests = (post.requests || []).filter(request => request.status !== 'Rejected').length;
+                    return `
+                        <tr>
+                            <td><span class="status-chip ${getStatusClass(post.status)}">${post.postType}</span></td>
+                            <td><strong>${post.teamName}</strong><br><span style="color:var(--text-muted); font-size:0.88rem;">${post.sport || 'Football'} • ${post.turf || 'Turf TBA'}</span></td>
+                            <td><span class="status-chip ${getStatusClass(post.status)}">${post.status || 'Open'}</span></td>
+                            <td>${formatDate(post.eventDate)} ${post.eventTime ? `• ${formatTime(post.eventTime)}` : ''}<br><span style="color:var(--text-muted); font-size:0.88rem;">${activeRequests} live request(s)</span></td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn-subtle" onclick="removeAllPendingForPost('${post._id}')">Clear Requests</button>
+                                    <button class="btn-danger" onclick="removeCommunityPost('${post._id}')">Delete Post</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderAdminTournaments() {
+            const table = document.getElementById('adminTourneyTable');
+            const tourneys = communityPosts.filter(post => post.postType === 'tournament');
+            if (!tourneys.length) {
+                table.innerHTML = `<tr><td colspan="5" class="empty-state">No active tournaments. Create one above.</td></tr>`;
+                return;
+            }
+
+            table.innerHTML = tourneys.map(t => `
+                <tr>
+                    <td><strong>${t.teamName}</strong></td>
+                    <td>${formatDate(t.eventDate)} ${t.eventTime ? `• ${formatTime(t.eventTime)}` : ''}</td>
+                    <td>₹${t.fare || 0}</td>
+                    <td>${(t.requests || []).filter(r => r.status !== 'Rejected').length}${t.maxTeams ? ` / ${t.maxTeams}` : ''}</td>
+                    <td><div class="table-actions"><button class="btn-danger" onclick="removeCommunityPost('${t._id}')">Delete Tournament</button></div></td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateCommunityRequestStatus(postId, requestId, status) {
+            try {
+                await fetchJsonOrThrow(`/community/${postId}/request/${requestId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                await loadAdminData();
+            } catch (error) {
+                alert(error.message || 'Could not update request.');
+            }
+        }
+
+        async function removeCommunityRequest(postId, requestId) {
+            if (!confirm('Remove this individual request?')) return;
+            try {
+                await fetchJsonOrThrow(`/community/${postId}/request/${requestId}`, { method: 'DELETE' });
+                await loadAdminData();
+            } catch (error) {
+                alert(error.message || 'Could not remove request.');
+            }
+        }
+
+        async function removeAllPendingForPost(postId) {
+            const post = communityPosts.find(entry => entry._id === postId);
+            if (!post) return;
+            const pending = (post.requests || []).filter(request => request.status === 'Pending');
+            if (!pending.length) {
+                alert('No pending requests on this post.');
+                return;
+            }
+            if (!confirm(`Remove ${pending.length} pending request(s) from this post?`)) return;
+            try {
+                for (const request of pending) {
+                    await fetchJsonOrThrow(`/community/${postId}/request/${request._id}`, { method: 'DELETE' });
+                }
+                await loadAdminData();
+            } catch (error) {
+                alert(error.message || 'Could not clear pending requests.');
+            }
+        }
+
+        async function removeCommunityPost(postId) {
+            if (!confirm('Delete this community post completely?')) return;
+            try {
+                await fetchJsonOrThrow(`/community/${postId}`, { method: 'DELETE' });
+                await loadAdminData();
+            } catch (error) {
+                alert(error.message || 'Could not remove the post.');
+            }
+        }
+
+        async function createAdminTournament() {
+            const name = document.getElementById('tName').value.trim();
+            const fee = Number(document.getElementById('tFee').value || 0);
+            const date = document.getElementById('tDate').value;
+            const time = document.getElementById('tTime').value;
+            const prize = document.getElementById('tPrize').value.trim();
+
+            if (!name || !fee || !date) return alert('Fill tournament name, fee, and date first.');
+
+            const currentAdmin = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const payload = {
+                postType: 'tournament',
+                sport: 'Football',
+                teamName: name,
+                fare: fee,
+                prizePool: prize || 'Trophy',
+                maxTeams: 16,
+                eventDate: date,
+                eventTime: time,
+                status: 'Registrations Open',
+                createdBy: currentAdmin.email || 'admin@turfarena.com'
+            };
+
+            try {
+                await fetchJsonOrThrow('/community', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                document.getElementById('tName').value = '';
+                document.getElementById('tFee').value = '';
+                document.getElementById('tDate').value = '';
+                document.getElementById('tTime').value = '';
+                document.getElementById('tPrize').value = '';
+                await loadAdminData();
+                alert(`🏆 ${name} is now live on the platform.`);
+            } catch (error) {
+                alert(error.message || 'Could not create tournament.');
+            }
+        }
+
+        function openBlockModal(turfId) {
+            activeAdminTurfId = turfId;
+            document.getElementById('blockModalTitle').innerText = `Lock Slots: ${turfData[turfId].name}`;
+            document.getElementById('blockModal').style.display = 'flex';
+            renderAdminSlots();
+        }
+
+        function closeBlockModal() {
+            document.getElementById('blockModal').style.display = 'none';
+        }
+
+        async function removeTurf(turfId) {
+            const turf = turfData[turfId];
+            if (!turf) return;
+            if (!confirm(`Delete ${turf.name} from TurfArena? This will also remove its bookings.`)) return;
+
+            try {
+                await fetchJsonOrThrow(`/turfs/${turfId}`, { method: 'DELETE' });
+                if (activeAdminTurfId === turfId) closeBlockModal();
+                await loadAdminData();
+                alert(`🗑️ ${turf.name} removed successfully.`);
+            } catch (error) {
+                alert(error.message || 'Could not remove turf.');
+            }
+        }
+
+        function openCreateTurfModal() {
+            document.getElementById('createTurfForm').reset();
+            document.getElementById('createTurfModal').style.display = 'flex';
+        }
+
+        function closeCreateTurfModal() {
+            document.getElementById('createTurfModal').style.display = 'none';
+        }
+
+        function formatHour(h) {
+            const fmt = (x) => `${x % 12 || 12}:00 ${x < 12 ? 'AM' : 'PM'}`;
+            return `${fmt(h)}`;
+        }
+
+        function renderAdminSlots() {
+            const grid = document.getElementById('adminSlotsGrid');
+            grid.innerHTML = '';
+            if (!blocked[activeAdminTurfId]) blocked[activeAdminTurfId] = [];
+            const currentlyBlocked = blocked[activeAdminTurfId];
+
+            for (let h = 0; h < 24; h++) {
+                const btn = document.createElement('button');
+                btn.className = 'admin-slot';
+                btn.textContent = formatHour(h);
+                if (currentlyBlocked.includes(h)) {
+                    btn.classList.add('blocked');
+                    btn.innerHTML = `🚫 ${formatHour(h)}`;
+                }
+                btn.onclick = () => toggleAdminSlot(h);
+                grid.appendChild(btn);
+            }
+        }
+
+        function toggleAdminSlot(h) {
+            const index = blocked[activeAdminTurfId].indexOf(h);
+            if (index >= 0) blocked[activeAdminTurfId].splice(index, 1);
+            else blocked[activeAdminTurfId].push(h);
+
+            localStorage.setItem('blocked', JSON.stringify(blocked));
+            renderAdminSlots();
+        }
+
+        function clearLogs() {
+            if (confirm('Are you sure you want to clear all booking logs?')) {
+                localStorage.removeItem('bookingLog');
+                alert('Logs cleared successfully.');
+            }
+        }
+
+        document.getElementById('createTurfForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('newTurfName').value.trim();
+            const location = document.getElementById('newTurfLocation').value.trim();
+            const sportsRaw = document.getElementById('newTurfSports').value.trim();
+            const basePrice = Number(document.getElementById('newTurfPrice').value || 0);
+            const image = document.getElementById('newTurfImage').value.trim();
+            const panoramaUrl = document.getElementById('newTurfPanorama').value.trim();
+            const sports = sportsRaw
+                ? sportsRaw.split(',').map(item => item.trim()).filter(Boolean)
+                : ['Football'];
+
+            if (!name || !location || !basePrice) {
+                alert('Fill turf name, location, and base price first.');
+                return;
+            }
+
+            try {
+                await fetchJsonOrThrow('/turfs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        location,
+                        sports,
+                        basePrice,
+                        meta: `${location} • ${sports.join(', ')}`,
+                        image,
+                        panoramaUrl
+                    })
+                });
+
+                closeCreateTurfModal();
+                await loadAdminData();
+                alert(`🏟️ ${name} created successfully.`);
+            } catch (error) {
+                alert(error.message || 'Could not create turf.');
+            }
+        });
+
+        function initChart() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const now = new Date();
+            const labels = [];
+            const totals = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(now);
+                d.setDate(now.getDate() - i);
+                labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+                const dayKey = d.toISOString().split('T')[0];
+                const dayTotal = bookings
+                    .filter((b) => String(b.date || '').slice(0, 10) === dayKey)
+                    .reduce((sum, b) => {
+                        const turf = b.turfId && typeof b.turfId === 'object' ? b.turfId : turfData[b.turfId];
+                        const turfPrice = turf && turf.basePrice ? turf.basePrice : 0;
+                        const slotCount = Array.isArray(b.slots) ? b.slots.length : 0;
+                        return sum + (slotCount * turfPrice);
+                    }, 0);
+                totals.push(dayTotal);
+            }
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+            if (revenueChartRef) revenueChartRef.destroy();
+            revenueChartRef = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets: [{ data: totals, borderColor: '#3b82f6', backgroundColor: gradient, borderWidth: 3, tension: 0.4, fill: true }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.12)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
